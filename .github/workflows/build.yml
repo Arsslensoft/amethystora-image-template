@@ -1,0 +1,128 @@
+# Builds the image whenever you push and once a day, checks it, and publishes it to your account's
+# registry as ghcr.io/<you>/<this repository>:stable and :stable-<date>, signed with your key.
+# A pull request is built and checked, never published.
+name: Build image
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["**.md"]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "40 4 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DEFAULT_TAG: stable
+  # The template itself is only built, never published: Amethystora's namespace takes Amethystora's
+  # signature alone
+  TEMPLATE: ${{ github.repository == 'iarsslen/amethystora-image-template' }}
+  PUBLISH: ${{ github.event_name != 'pull_request' && github.repository != 'iarsslen/amethystora-image-template' }}
+
+jobs:
+  build:
+    name: Build and publish
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Make room
+        uses: ublue-os/remove-unwanted-software@695eb75bc387dbcd9685a8e72d23439d8686cba6 # v10
+
+      # Installer v3 installs cosign 2, which stores signatures where Amethystora machines look for them
+      # (use-sigstore-attachments). Cosign 3 does not, so this stays on v3 (.github/renovate.json5).
+      - name: Install cosign
+        uses: sigstore/cosign-installer@7e8b541eb2e61bf99390e1afd4be13a184e9ebc5 # v3.10.1
+
+      - name: Your signing key
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
+          COSIGN_PASSWORD: ""
+        run: |
+          set -euo pipefail
+          if [[ ! -s cosign.pub && "${TEMPLATE}" == true ]]; then
+            openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 | openssl pkey -pubout >cosign.pub
+          fi
+          if [[ ! -s cosign.pub ]]; then
+            echo "::error::There is no cosign.pub yet: make your signing key first, as README.md says."
+            exit 1
+          fi
+          if [[ "${PUBLISH}" == true ]]; then
+            if [[ -z "${COSIGN_PRIVATE_KEY}" ]]; then
+              echo "::error::The secret SIGNING_SECRET is not set: README.md says how."
+              exit 1
+            fi
+            # The image trusts cosign.pub for its updates, so it has to be the key it is signed with
+            cosign public-key --key env://COSIGN_PRIVATE_KEY >signing.pub
+            if ! cmp -s <(openssl pkey -pubin -in signing.pub -outform DER) <(openssl pkey -pubin -in cosign.pub -outform DER); then
+              echo "::error::cosign.pub is not the public half of SIGNING_SECRET: commit the cosign.pub made with it."
+              exit 1
+            fi
+          fi
+
+      # Your image builds on Amethystora's: check that it is Amethystora's before building on it
+      - name: Check Amethystora's signature
+        run: |
+          set -euo pipefail
+          base="$(awk '$1 == "FROM" && $2 ~ /^ghcr\.io\/iarsslen\// { print $2; exit }' Containerfile)"
+          cosign verify --key amethystora.pub "${base}" >/dev/null
+
+      - name: Install just
+        run: |
+          /home/linuxbrew/.linuxbrew/bin/brew install just
+          echo "/home/linuxbrew/.linuxbrew/bin" >>"${GITHUB_PATH}"
+
+      - name: Names
+        run: |
+          # GHCR takes lower-case names only
+          name="${GITHUB_REPOSITORY#*/}"
+          echo "IMAGE_NAME=${name,,}" >>"${GITHUB_ENV}"
+          if [[ "${TEMPLATE}" != true ]]; then
+            echo "IMAGE_REPOSITORY=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/${name,,}" >>"${GITHUB_ENV}"
+          fi
+          echo "DATE=$(date -u +%Y%m%d)" >>"${GITHUB_ENV}"
+
+      - name: Build
+        run: sudo -E "$(command -v just)" build
+
+      - name: Rechunk
+        run: sudo -E "$(command -v just)" rechunk
+
+      - name: Publish
+        id: push
+        if: env.PUBLISH == 'true'
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "${TOKEN}" | sudo podman login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
+          for tag in "${DEFAULT_TAG}" "${DEFAULT_TAG}-${DATE}"; do
+            # Twice: podman sends the layers' annotations only once the layers are in the registry, so
+            # the first push of a rechunked image gets a digest of its own (containers/podman#27796),
+            # and only the digest pushed last is signed
+            for _ in 1 2; do
+              sudo podman push --digestfile digest "localhost/${IMAGE_NAME}:${DEFAULT_TAG}" "${IMAGE_REPOSITORY}:${tag}"
+            done
+          done
+          echo "digest=$(cat digest)" >>"${GITHUB_OUTPUT}"
+
+      - name: Sign
+        if: env.PUBLISH == 'true'
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
+          COSIGN_PASSWORD: ""
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          set -euo pipefail
+          echo "${TOKEN}" | cosign login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
+          cosign sign -y --key env://COSIGN_PRIVATE_KEY "${IMAGE_REPOSITORY}@${DIGEST}"

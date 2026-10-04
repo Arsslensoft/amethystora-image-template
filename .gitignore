@@ -1,0 +1,5 @@
+# The private half of your signing key belongs in the SIGNING_SECRET secret, never in the repository
+cosign.key
+*.key
+signing.pub
+digest

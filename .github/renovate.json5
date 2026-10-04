@@ -1,0 +1,24 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  // Pins every image and action by digest (docker:pinDigests, helpers:pinGitHubActionDigests)
+  "extends": ["config:best-practices"],
+  // Renovate merges by itself, once the build has passed: GitHub's own auto-merge would merge at once
+  // in a repository that requires no checks
+  "platformAutomerge": false,
+  "packageRules": [
+    {
+      // Each Amethystora release moves the digest of the FROM line. The change is merged once the build
+      // has passed on it, and the build after the merge publishes your image on the new release.
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/iarsslen/amethystora*"],
+      "matchUpdateTypes": ["digest"],
+      "automerge": true
+    },
+    {
+      // Installer v4 installs cosign 3, which stores signatures where Amethystora machines do not look
+      // for them (use-sigstore-attachments), so every update would fail its signature check
+      "matchPackageNames": ["sigstore/cosign-installer"],
+      "allowedVersions": "<4"
+    }
+  ]
+}
