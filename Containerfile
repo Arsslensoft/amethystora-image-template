@@ -5,7 +5,7 @@ FROM scratch AS ctx
 COPY build_files /build_files
 COPY cosign.pub /cosign.pub
 
-FROM ghcr.io/iarsslen/amethystora:stable@sha256:6a120c703b2a0d9998d7bef867aace02b5884e1d4aeb5d1ae7e00cd1a5bd2e7c
+FROM ghcr.io/iarsslen/amethystora:stable@sha256:b34ca0082a3c5fa93dd4f2c8b91781b0323527b5f8f46d753029b4c9cf0bdbf2
 
 # Where the image is published. With it, the image takes its own updates only when they carry a
 # signature cosign.pub checks; the build checks that, and that Amethystora's own checks still stand.
