@@ -50,16 +50,21 @@ profile, **Packages**, your image, **Package settings**, **Change visibility**.
 
 ### What every machine starts with
 
-Three more places shape the image without a script; `build_files/files.sh` reads them after `build.sh`:
+Four more places shape the image without a script; `build_files/files.sh` reads them after `build.sh`, and
+stops the build, saying why, on anything the image cannot take:
 
+- [`packages`](packages): Fedora's packages the system itself carries, one name a line, from Fedora's own
+  repositories, such as a printer's driver or a VPN client.
 - [`setup.json`](setup.json): the apps from Flathub, the Homebrew tools, the GNOME extensions turned on, the
   theme, the dock, keybindings, the window layout and the tiling's settings every account starts with, in the
-  format `ame setup save` writes. Save your own machine's with `ame setup save setup.json` and commit it: the
-  build takes it as the image's defaults (`amethystora-setup bake`), and stops on anything the image cannot have,
-  such as an app from a remote other than Flathub or an extension it does not carry. Accounts can still change
-  everything; containers are left out, since each account makes its own.
-- [`branding/`](branding/README.md): the system's name, wallpaper, logo and login screen.
-- [`policy/`](policy/README.md): how far the AI agent may go, and the security profile.
+  format `ame setup save` writes. Set one machine up as every machine should be, save it there with
+  `ame setup save setup.json` and commit it: the build takes it as the image's defaults (`amethystora-setup
+  bake`). Accounts can still change everything; containers are left out, since each account makes its own.
+- [`branding/`](branding/README.md): the system's name, wallpaper, logo and login screen, and the desktop style,
+  icons and fonts every account starts with.
+- [`policy/`](policy/README.md): how far the AI agent may go; Security's profile and each of its switches; the
+  stricter hardening; GNOME's settings, by default or locked for everyone (screen lock and idle times, the login
+  screen's notice, camera and microphone, printing, keyboard layouts and more); and when machines update.
 
 ## 4. Stay on Amethystora's newest release
 

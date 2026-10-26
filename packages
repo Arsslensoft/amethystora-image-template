@@ -1,0 +1,6 @@
+# Fedora's packages your image carries, one name a line, installed from Fedora's own repositories when the image
+# is built. Most software is better off outside the image: apps from Flathub (setup.json), command line tools from
+# Homebrew, other distributions' packages in containers. This is for what has to be in the system, such as a
+# printer's driver or a VPN client.
+#
+# cups-filters

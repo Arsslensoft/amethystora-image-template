@@ -1,11 +1,12 @@
-# Your image, built on Amethystora. What you add goes in build_files/build.sh, and the apps, look and
-# policy every machine starts with in setup.json, branding/ and policy/ (the editor on amethystora.org
-# writes those); this file seldom needs a change. Renovate moves the digest below onto each new
+# Your image, built on Amethystora. What you add goes in build_files/build.sh, and Fedora's packages, the
+# apps, look and policy every machine starts with in packages, setup.json, branding/ and policy/ (the editor
+# on amethystora.org writes those); this file seldom needs a change. Renovate moves the digest below onto each new
 # Amethystora release.
 
 FROM scratch AS ctx
 COPY build_files /build_files
 COPY cosign.pub /cosign.pub
+COPY packages /packages
 COPY setup.json /setup.json
 COPY branding /branding
 COPY policy /policy
