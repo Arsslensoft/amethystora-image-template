@@ -5,6 +5,17 @@
   // Renovate merges by itself, once the build has passed: GitHub's own auto-merge would merge at once
   // in a repository that requires no checks
   "platformAutomerge": false,
+  "customManagers": [
+    {
+      // The commit of Amethystora whose installer files build-iso.yml builds the ISOs with
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/build-iso\\.yml$/"],
+      "matchStrings": ["AMETHYSTORA_REF: (?<currentDigest>[0-9a-f]{40}) # (?<currentValue>\\S+)"],
+      "depNameTemplate": "amethystora",
+      "packageNameTemplate": "https://github.com/iarsslen/amethystora",
+      "datasourceTemplate": "git-refs"
+    }
+  ],
   "packageRules": [
     {
       // Each Amethystora release moves the digest of the FROM line. The change is merged once the build

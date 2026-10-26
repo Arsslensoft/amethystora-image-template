@@ -9,7 +9,11 @@ Amethystora's, with its updates, its rollbacks and its signature checks.
 Most software does not need any of this. Apps from Flathub, command line tools from Homebrew and
 other distributions' packages in containers (`amepkg`) update on their own and cannot break the system,
 and `ame setup` keeps the list of them in a file you can apply to any machine. An image of your own is
-for what has to be in the system itself: a driver, a system service, a tool every account needs.
+for what has to be in the system itself: a driver, a system service, a tool every account needs, or the
+apps, look and policy every machine of a company or a school starts with.
+
+The editor at [amethystora.org/build](https://amethystora.org/build) writes `setup.json`, `branding/` and
+`policy/` for you, from lists of what Amethystora can carry.
 
 ## 1. Make your repository
 
@@ -44,6 +48,19 @@ publishes `ghcr.io/<you>/<your-image>:stable`, and `:stable-<date>` for each day
 Then make the image public, so that your machines can download it without logging in: on GitHub, your
 profile, **Packages**, your image, **Package settings**, **Change visibility**.
 
+### What every machine starts with
+
+Three more places shape the image without a script; `build_files/files.sh` reads them after `build.sh`:
+
+- [`setup.json`](setup.json): the apps from Flathub, the Homebrew tools, the GNOME extensions turned on, the
+  theme, the dock, keybindings, the window layout and the tiling's settings every account starts with, in the
+  format `ame setup save` writes. Save your own machine's with `ame setup save setup.json` and commit it: the
+  build takes it as the image's defaults (`amethystora-setup bake`), and stops on anything the image cannot have,
+  such as an app from a remote other than Flathub or an extension it does not carry. Accounts can still change
+  everything; containers are left out, since each account makes its own.
+- [`branding/`](branding/README.md): the system's name, wallpaper, logo and login screen.
+- [`policy/`](policy/README.md): how far the AI agent may go, and the security profile.
+
 ## 4. Stay on Amethystora's newest release
 
 The `FROM` line of the [`Containerfile`](Containerfile) names Amethystora's image by its digest, so
@@ -76,6 +93,21 @@ sudo cp /usr/etc/containers/policy.json /etc/containers/policy.json
 If you have layered packages, switch with
 `sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/<you>/<your-image>:stable` instead, which
 keeps them. Going back works the same way, with `ghcr.io/iarsslen/amethystora:stable`.
+
+## 6. ISOs to install it with
+
+Once your image is published, **Actions**, **Build ISO**, **Run workflow** builds its two ISOs with
+Amethystora's own installer files: `<your-image>.iso`, which starts from a USB stick to try the system and
+installs it from there, offline, and `<your-image>-non-uefi.iso`, the installer, the only one that also starts
+computers without UEFI. Either installs your image and switches the machine to take its updates from your
+registry, checked against your key. They take about an hour.
+
+Each ISO comes with its checksum, signed with your key (`cosign verify-blob --key cosign.pub --bundle
+<iso>.sha256.bundle <iso>.sha256`), and both are kept as the run's artifacts for a week: a GitHub Release
+takes no file over 2 GiB. To keep them for longer, set four more secrets for S3-compatible storage, such as
+Cloudflare R2, and each run uploads them there: `STORAGE_ENDPOINT` (such as
+`https://<account>.r2.cloudflarestorage.com`), `STORAGE_BUCKET`, `STORAGE_ACCESS_KEY_ID` and
+`STORAGE_SECRET_ACCESS_KEY`.
 
 ## Building on your own machine
 
