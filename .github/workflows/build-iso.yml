@@ -30,7 +30,7 @@ jobs:
   image:
     name: Image
     # The template itself publishes no image
-    if: github.repository != 'iarsslen/amethystora-image-template'
+    if: github.repository != 'arsslensoft/amethystora-image-template'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -83,7 +83,7 @@ jobs:
       - name: Amethystora's installer files
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          repository: iarsslen/amethystora
+          repository: arsslensoft/amethystora
           ref: ${{ env.AMETHYSTORA_REF }}
           persist-credentials: false
 
@@ -174,7 +174,7 @@ jobs:
       - name: Amethystora's installer files
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          repository: iarsslen/amethystora
+          repository: arsslensoft/amethystora
           ref: ${{ env.AMETHYSTORA_REF }}
           persist-credentials: false
 

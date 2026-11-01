@@ -12,7 +12,7 @@
       "managerFilePatterns": ["/^\\.github/workflows/build-iso\\.yml$/"],
       "matchStrings": ["AMETHYSTORA_REF: (?<currentDigest>[0-9a-f]{40}) # (?<currentValue>\\S+)"],
       "depNameTemplate": "amethystora",
-      "packageNameTemplate": "https://github.com/iarsslen/amethystora",
+      "packageNameTemplate": "https://github.com/arsslensoft/amethystora",
       "datasourceTemplate": "git-refs"
     }
   ],
@@ -21,7 +21,7 @@
       // Each Amethystora release moves the digest of the FROM line. The change is merged once the build
       // has passed on it, and the build after the merge publishes your image on the new release.
       "matchDatasources": ["docker"],
-      "matchPackageNames": ["ghcr.io/iarsslen/amethystora*"],
+      "matchPackageNames": ["ghcr.io/arsslensoft/amethystora*"],
       "matchUpdateTypes": ["digest"],
       "automerge": true
     },

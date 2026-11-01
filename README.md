@@ -1,6 +1,6 @@
 # An image of your own, built on Amethystora
 
-This repository builds a system image `FROM` [Amethystora](https://github.com/iarsslen/amethystora),
+This repository builds a system image `FROM` [Amethystora](https://github.com/arsslensoft/amethystora),
 with what you add to it, every time you push and once a day. GitHub's own runners build it and publish
 it to your account's container registry, signed with a key that only you hold, and Renovate moves it
 onto each new Amethystora release. Your machines then follow your image the way they followed
@@ -97,7 +97,7 @@ sudo cp /usr/etc/containers/policy.json /etc/containers/policy.json
 
 If you have layered packages, switch with
 `sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/<you>/<your-image>:stable` instead, which
-keeps them. Going back works the same way, with `ghcr.io/iarsslen/amethystora:stable`.
+keeps them. Going back works the same way, with `ghcr.io/arsslensoft/amethystora:stable`.
 
 ## 6. ISOs to install it with
 
@@ -137,13 +137,13 @@ The `Containerfile` ends with two checks, and a build that fails either is not p
 
 To build on the developer image, or on the one with NVIDIA's driver, change the `FROM` line to
 `amethystora-dx`, `amethystora-nvidia-open` or `amethystora-dx-nvidia-open`, with its own digest:
-`skopeo inspect docker://ghcr.io/iarsslen/amethystora-dx:stable | jq -r .Digest`. The `latest` tag
+`skopeo inspect docker://ghcr.io/arsslensoft/amethystora-dx:stable | jq -r .Digest`. The `latest` tag
 follows Amethystora's testing stream.
 
 ## A recipe instead of a script
 
 If you would rather describe your image in a file than in a script, [BlueBuild](https://blue-build.org)
-builds from any bootc image: give its `recipe.yml` `base-image: ghcr.io/iarsslen/amethystora` and
+builds from any bootc image: give its `recipe.yml` `base-image: ghcr.io/arsslensoft/amethystora` and
 `image-version: stable`.
 
 ## Licence

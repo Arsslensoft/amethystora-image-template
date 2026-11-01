@@ -21,8 +21,8 @@ env:
   DEFAULT_TAG: stable
   # The template itself is only built, never published: Amethystora's namespace takes Amethystora's
   # signature alone
-  TEMPLATE: ${{ github.repository == 'iarsslen/amethystora-image-template' }}
-  PUBLISH: ${{ github.event_name != 'pull_request' && github.repository != 'iarsslen/amethystora-image-template' }}
+  TEMPLATE: ${{ github.repository == 'arsslensoft/amethystora-image-template' }}
+  PUBLISH: ${{ github.event_name != 'pull_request' && github.repository != 'arsslensoft/amethystora-image-template' }}
 
 jobs:
   build:
@@ -73,7 +73,7 @@ jobs:
       - name: Check Amethystora's signature
         run: |
           set -euo pipefail
-          base="$(awk '$1 == "FROM" && $2 ~ /^ghcr\.io\/iarsslen\// { print $2; exit }' Containerfile)"
+          base="$(awk '$1 == "FROM" && $2 ~ /^ghcr\.io\/arsslensoft\// { print $2; exit }' Containerfile)"
           cosign verify --key amethystora.pub "${base}" >/dev/null
 
       - name: Install just

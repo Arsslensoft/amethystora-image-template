@@ -50,7 +50,7 @@ GNOME's settings every account starts with, each one also lockable so that no ac
   "set": {"idle-delay": 300, "screen-lock": true, "camera-off": true, "keyboard-layouts": ["us", "fr+azerty"],
           "login-banner": "Property of Acme. Authorised use only."},
   "lock": ["idle-delay", "screen-lock"],
-  "extensions-off": ["amethystora-widgets@iarsslen.github.io"]
+  "extensions-off": ["amethystora-widgets@arsslensoft.github.io"]
 }
 ```
 
