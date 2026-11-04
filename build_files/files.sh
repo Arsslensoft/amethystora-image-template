@@ -52,7 +52,8 @@ if says /ctx/branding; then
     /usr/libexec/amethystora-brand /ctx/branding
 fi
 
-if says /ctx/policy; then
+# vpn/ is a folder of its own, so a policy of VPN connections alone has nothing at the top of policy/
+if says /ctx/policy || says /ctx/policy/vpn; then
     need /usr/libexec/amethystora-image-policy
     /usr/libexec/amethystora-image-policy /ctx/policy
 fi
